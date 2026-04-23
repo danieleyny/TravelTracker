@@ -27,7 +27,9 @@ export default function EditTripForm({ trip, vehicles }: { trip: Trip; vehicles:
   const [vehicleId, setVehicleId] = useState(trip.vehicleId);
   const [tripDate, setTripDate] = useState(trip.tripDate);
   const [fromAddress, setFromAddress] = useState(trip.fromAddress);
+  const [fromLatLng, setFromLatLng] = useState<{ lat: number; lon: number } | null>(null);
   const [toAddress, setToAddress] = useState(trip.toAddress);
+  const [toLatLng, setToLatLng] = useState<{ lat: number; lon: number } | null>(null);
   const [distanceMiles, setDistanceMiles] = useState<number>(trip.distanceMiles);
   const [isRoundTrip, setIsRoundTrip] = useState<boolean>(trip.isRoundTrip);
   const [purposeCategory, setPurposeCategory] = useState<string>(trip.purposeCategory);
@@ -45,7 +47,10 @@ export default function EditTripForm({ trip, vehicles }: { trip: Trip; vehicles:
       const res = await fetch("/api/distance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: fromAddress, to: toAddress }),
+        body: JSON.stringify({
+          from: { text: fromAddress, latLng: fromLatLng },
+          to: { text: toAddress, latLng: toLatLng },
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not calculate distance");
@@ -120,11 +125,19 @@ export default function EditTripForm({ trip, vehicles }: { trip: Trip; vehicles:
 
       <div>
         <label>From</label>
-        <AddressInput value={fromAddress} onChange={setFromAddress} />
+        <AddressInput
+          value={fromAddress}
+          onChange={(v) => { setFromAddress(v); setFromLatLng(null); }}
+          onPick={(p) => { setFromAddress(p.label); setFromLatLng({ lat: p.lat, lon: p.lon }); }}
+        />
       </div>
       <div>
         <label>To</label>
-        <AddressInput value={toAddress} onChange={setToAddress} />
+        <AddressInput
+          value={toAddress}
+          onChange={(v) => { setToAddress(v); setToLatLng(null); }}
+          onPick={(p) => { setToAddress(p.label); setToLatLng({ lat: p.lat, lon: p.lon }); }}
+        />
       </div>
 
       <button

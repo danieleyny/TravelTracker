@@ -27,7 +27,9 @@ export default function NewTripWizard({
   const [vehicleId, setVehicleId] = useState(vehicles[0]?.id ?? "");
   const [tripDate, setTripDate] = useState(today());
   const [fromAddress, setFromAddress] = useState("");
+  const [fromLatLng, setFromLatLng] = useState<{ lat: number; lon: number } | null>(null);
   const [toAddress, setToAddress] = useState("");
+  const [toLatLng, setToLatLng] = useState<{ lat: number; lon: number } | null>(null);
   const [distanceMiles, setDistanceMiles] = useState<number | null>(null);
   const [isRoundTrip, setIsRoundTrip] = useState(false);
   const [calculating, setCalculating] = useState(false);
@@ -45,7 +47,10 @@ export default function NewTripWizard({
       const res = await fetch("/api/distance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ from: fromAddress, to: toAddress }),
+        body: JSON.stringify({
+          from: { text: fromAddress, latLng: fromLatLng },
+          to: { text: toAddress, latLng: toLatLng },
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Could not calculate distance");
@@ -141,7 +146,8 @@ export default function NewTripWizard({
           <AddressInput
             value={fromAddress}
             placeholder="Starting address"
-            onChange={(v) => { setFromAddress(v); setDistanceMiles(null); }}
+            onChange={(v) => { setFromAddress(v); setFromLatLng(null); setDistanceMiles(null); }}
+            onPick={(p) => { setFromAddress(p.label); setFromLatLng({ lat: p.lat, lon: p.lon }); setDistanceMiles(null); }}
           />
         </div>
         <div>
@@ -149,7 +155,8 @@ export default function NewTripWizard({
           <AddressInput
             value={toAddress}
             placeholder="Destination address"
-            onChange={(v) => { setToAddress(v); setDistanceMiles(null); }}
+            onChange={(v) => { setToAddress(v); setToLatLng(null); setDistanceMiles(null); }}
+            onPick={(p) => { setToAddress(p.label); setToLatLng({ lat: p.lat, lon: p.lon }); setDistanceMiles(null); }}
           />
         </div>
 
