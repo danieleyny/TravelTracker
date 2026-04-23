@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PURPOSE_OPTIONS } from "@/lib/purposes";
 import AddressInput from "@/components/AddressInput";
+import DatePicker from "@/components/DatePicker";
 
 type Vehicle = { id: string; title: string };
 
@@ -130,7 +131,7 @@ export default function NewTripWizard({
         </div>
         <div>
           <label>Date</label>
-          <input type="date" value={tripDate} onChange={(e) => setTripDate(e.target.value)} />
+          <DatePicker value={tripDate} onChange={setTripDate} />
         </div>
 
         <div>
