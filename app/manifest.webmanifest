@@ -1,0 +1,9 @@
+{
+  "name": "Travel Tracker",
+  "short_name": "Tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F7F5",
+  "theme_color": "#0B0F14",
+  "icons": []
+}
