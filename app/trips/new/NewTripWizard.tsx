@@ -29,6 +29,7 @@ export default function NewTripWizard({
   const [fromAddress, setFromAddress] = useState("");
   const [toAddress, setToAddress] = useState("");
   const [distanceMiles, setDistanceMiles] = useState<number | null>(null);
+  const [isRoundTrip, setIsRoundTrip] = useState(false);
   const [calculating, setCalculating] = useState(false);
   const [calcErr, setCalcErr] = useState<string | null>(null);
 
@@ -80,6 +81,7 @@ export default function NewTripWizard({
           fromAddress: fromAddress.trim(),
           toAddress: toAddress.trim(),
           distanceMiles,
+          isRoundTrip,
           purposeCategory: purposeCategory || "Other",
           purposeNotes: purposeNotes.trim() || null,
         }),
@@ -157,9 +159,36 @@ export default function NewTripWizard({
           disabled={!fromAddress.trim() || !toAddress.trim() || calculating}
           className="btn-ghost w-full"
         >
-          {calculating ? "Calculating…" : distanceMiles != null ? `Distance: ${distanceMiles.toFixed(1)} mi — recalculate` : "Calculate distance"}
+          {calculating
+            ? "Calculating…"
+            : distanceMiles != null
+              ? `One-way: ${distanceMiles.toFixed(1)} mi — recalculate`
+              : "Calculate distance"}
         </button>
         {calcErr && <p className="text-sm text-red-600">{calcErr}</p>}
+
+        <label className="flex cursor-pointer items-center justify-between rounded-xl border border-black/10 bg-white px-4 py-3">
+          <span className="flex flex-col">
+            <span className="text-sm font-medium text-ink">Round trip</span>
+            <span className="text-xs text-black/50">Going there and coming back — doubles the miles</span>
+          </span>
+          <input
+            type="checkbox"
+            checked={isRoundTrip}
+            onChange={(e) => setIsRoundTrip(e.target.checked)}
+            className="!h-5 !w-5 !rounded !border-black/20"
+          />
+        </label>
+
+        {distanceMiles != null && (
+          <div className="text-center text-sm text-black/60">
+            Total to log:{" "}
+            <span className="font-semibold text-ink">
+              {(distanceMiles * (isRoundTrip ? 2 : 1)).toFixed(1)} mi
+            </span>
+            {isRoundTrip && <span className="ml-1 text-black/40">(round trip)</span>}
+          </div>
+        )}
 
         <button
           type="button"

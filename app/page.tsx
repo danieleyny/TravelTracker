@@ -8,6 +8,10 @@ function fmtDate(d: Date) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
+function effectiveMiles(t: { distanceMiles: number; isRoundTrip: boolean }) {
+  return t.distanceMiles * (t.isRoundTrip ? 2 : 1);
+}
+
 export default async function Home() {
   const trips = await prisma.trip.findMany({
     orderBy: [{ tripDate: "desc" }, { createdAt: "desc" }],
@@ -18,7 +22,7 @@ export default async function Home() {
   const year = new Date().getFullYear();
   const ytdMiles = trips
     .filter((t) => t.tripDate.getFullYear() === year)
-    .reduce((s, t) => s + t.distanceMiles, 0);
+    .reduce((s, t) => s + effectiveMiles(t), 0);
 
   return (
     <>
@@ -52,18 +56,24 @@ export default async function Home() {
         <ul className="space-y-2">
           {trips.map((t) => (
             <li key={t.id} className="card px-5 py-4">
-              <div className="flex items-start justify-between gap-4">
+              <Link href={`/trips/${t.id}/edit`} className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs text-black/40">{fmtDate(t.tripDate)} · {t.driverName} · {t.vehicle.title}</div>
+                  <div className="text-xs text-black/40">
+                    {fmtDate(t.tripDate)} · {t.driverName} · {t.vehicle.title}
+                  </div>
                   <div className="mt-1 truncate text-sm font-medium">{t.fromAddress}</div>
-                  <div className="truncate text-sm text-black/60">→ {t.toAddress}</div>
-                  <div className="mt-1 text-xs text-black/50">{t.purposeCategory}{t.purposeNotes ? ` — ${t.purposeNotes}` : ""}</div>
+                  <div className="truncate text-sm text-black/60">
+                    {t.isRoundTrip ? "⇄" : "→"} {t.toAddress}
+                  </div>
+                  <div className="mt-1 text-xs text-black/50">
+                    {t.purposeCategory}{t.purposeNotes ? ` — ${t.purposeNotes}` : ""}
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-base font-semibold">{t.distanceMiles.toFixed(1)}</div>
-                  <div className="text-xs text-black/40">miles</div>
+                  <div className="text-base font-semibold">{effectiveMiles(t).toFixed(1)}</div>
+                  <div className="text-xs text-black/40">{t.isRoundTrip ? "mi round" : "miles"}</div>
                 </div>
-              </div>
+              </Link>
             </li>
           ))}
         </ul>

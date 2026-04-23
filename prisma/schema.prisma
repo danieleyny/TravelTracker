@@ -32,6 +32,7 @@ model Trip {
   fromAddress     String
   toAddress       String
   distanceMiles   Float
+  isRoundTrip     Boolean  @default(false)
   startOdometer   Float?
   endOdometer     Float?
   purposeCategory String

@@ -36,29 +36,34 @@ export async function GET(req: NextRequest) {
     "VIN",
     "From",
     "To",
-    "Distance (miles)",
+    "Round trip",
+    "Miles driven",
     "Purpose",
     "Notes",
   ];
-  const tripRows = trips.map((t) => [
-    t.tripDate.toISOString().slice(0, 10),
-    t.driverName,
-    t.vehicle.title,
-    t.vehicle.make ?? "",
-    t.vehicle.model ?? "",
-    t.vehicle.year ?? "",
-    t.vehicle.licensePlate ?? "",
-    t.vehicle.vin ?? "",
-    t.fromAddress,
-    t.toAddress,
-    t.distanceMiles.toFixed(2),
-    t.purposeCategory,
-    t.purposeNotes ?? "",
-  ]);
+  const tripRows = trips.map((t) => {
+    const total = t.distanceMiles * (t.isRoundTrip ? 2 : 1);
+    return [
+      t.tripDate.toISOString().slice(0, 10),
+      t.driverName,
+      t.vehicle.title,
+      t.vehicle.make ?? "",
+      t.vehicle.model ?? "",
+      t.vehicle.year ?? "",
+      t.vehicle.licensePlate ?? "",
+      t.vehicle.vin ?? "",
+      t.fromAddress,
+      t.toAddress,
+      t.isRoundTrip ? "Yes" : "No",
+      total.toFixed(2),
+      t.purposeCategory,
+      t.purposeNotes ?? "",
+    ];
+  });
 
-  const total = trips.reduce((s, t) => s + t.distanceMiles, 0);
+  const total = trips.reduce((s, t) => s + t.distanceMiles * (t.isRoundTrip ? 2 : 1), 0);
   tripRows.push([]);
-  tripRows.push(["", "", "", "", "", "", "", "", "", "TOTAL", total.toFixed(2), "", ""]);
+  tripRows.push(["", "", "", "", "", "", "", "", "", "", "TOTAL", total.toFixed(2), "", ""]);
 
   const odoHeader = ["Vehicle", "Year-start odometer", "Year-end odometer", "Miles from odometer"];
   const odoRows = vehicles.map((v) => {
