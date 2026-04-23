@@ -10,6 +10,19 @@ type Vehicle = {
   year?: number | null;
   licensePlate?: string | null;
   vin?: string | null;
+  yearStartOdo?: number | null;
+  yearEndOdo?: number | null;
+};
+
+const empty: Vehicle = {
+  title: "",
+  make: "",
+  model: "",
+  year: undefined,
+  licensePlate: "",
+  vin: "",
+  yearStartOdo: undefined,
+  yearEndOdo: undefined,
 };
 
 export default function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
@@ -21,14 +34,18 @@ export default function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
     year: vehicle?.year ?? undefined,
     licensePlate: vehicle?.licensePlate ?? "",
     vin: vehicle?.vin ?? "",
+    yearStartOdo: vehicle?.yearStartOdo ?? undefined,
+    yearEndOdo: vehicle?.yearEndOdo ?? undefined,
   });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setErr(null);
+    setSaved(false);
     try {
       const url = vehicle?.id ? `/api/vehicles/${vehicle.id}` : `/api/vehicles`;
       const method = vehicle?.id ? "PATCH" : "POST";
@@ -38,11 +55,20 @@ export default function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
         body: JSON.stringify({
           ...form,
           year: form.year ? Number(form.year) : null,
+          yearStartOdo: form.yearStartOdo != null && form.yearStartOdo !== ("" as unknown as number) ? Number(form.yearStartOdo) : null,
+          yearEndOdo: form.yearEndOdo != null && form.yearEndOdo !== ("" as unknown as number) ? Number(form.yearEndOdo) : null,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
-      router.push("/vehicles");
-      router.refresh();
+      if (vehicle?.id) {
+        router.push("/vehicles");
+        router.refresh();
+      } else {
+        setForm(empty);
+        setSaved(true);
+        router.refresh();
+        setSaving(false);
+      }
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Save failed");
       setSaving(false);
@@ -120,7 +146,37 @@ export default function VehicleForm({ vehicle }: { vehicle?: Vehicle }) {
           onChange={(e) => setForm({ ...form, vin: e.target.value })}
         />
       </div>
+      <div className="rounded-xl bg-black/[.03] p-3">
+        <div className="mb-2 text-xs text-black/60">
+          Odometer (Jan 1 and Dec 31 — IRS needs these once a year, not per trip)
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label>Year-start odo</label>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="1"
+              placeholder="e.g. 45,200"
+              value={form.yearStartOdo ?? ""}
+              onChange={(e) => setForm({ ...form, yearStartOdo: e.target.value ? Number(e.target.value) : undefined })}
+            />
+          </div>
+          <div>
+            <label>Year-end odo</label>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="1"
+              placeholder="fill Dec 31"
+              value={form.yearEndOdo ?? ""}
+              onChange={(e) => setForm({ ...form, yearEndOdo: e.target.value ? Number(e.target.value) : undefined })}
+            />
+          </div>
+        </div>
+      </div>
       {err && <p className="text-sm text-red-600">{err}</p>}
+      {saved && !err && <p className="text-sm text-green-700">Saved ✓</p>}
       <div className="flex gap-2 pt-1">
         <button type="submit" disabled={saving} className="btn-primary flex-1">
           {saving ? "Saving…" : vehicle?.id ? "Save" : "Add vehicle"}

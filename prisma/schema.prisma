@@ -9,16 +9,18 @@ datasource db {
 }
 
 model Vehicle {
-  id           String   @id @default(cuid())
-  title        String
-  make         String?
-  model        String?
-  year         Int?
-  licensePlate String?
-  vin          String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  trips        Trip[]
+  id            String   @id @default(cuid())
+  title         String
+  make          String?
+  model         String?
+  year          Int?
+  licensePlate  String?
+  vin           String?
+  yearStartOdo  Float?
+  yearEndOdo    Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  trips         Trip[]
 }
 
 model Trip {

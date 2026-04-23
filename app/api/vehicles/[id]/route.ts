@@ -15,6 +15,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if ("year" in body) data.year = body.year ? Number(body.year) : null;
   if ("licensePlate" in body) data.licensePlate = body.licensePlate?.trim() || null;
   if ("vin" in body) data.vin = body.vin?.trim() || null;
+  if ("yearStartOdo" in body) data.yearStartOdo = body.yearStartOdo != null ? Number(body.yearStartOdo) : null;
+  if ("yearEndOdo" in body) data.yearEndOdo = body.yearEndOdo != null ? Number(body.yearEndOdo) : null;
 
   try {
     const v = await prisma.vehicle.update({ where: { id: params.id }, data });

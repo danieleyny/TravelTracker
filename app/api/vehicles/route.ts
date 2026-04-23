@@ -18,6 +18,8 @@ export async function POST(req: NextRequest) {
       year: body.year ? Number(body.year) : null,
       licensePlate: body.licensePlate?.trim() || null,
       vin: body.vin?.trim() || null,
+      yearStartOdo: body.yearStartOdo != null ? Number(body.yearStartOdo) : null,
+      yearEndOdo: body.yearEndOdo != null ? Number(body.yearEndOdo) : null,
     },
   });
   return NextResponse.json(vehicle, { status: 201 });

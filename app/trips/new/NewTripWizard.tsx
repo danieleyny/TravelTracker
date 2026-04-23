@@ -1,7 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PURPOSE_OPTIONS } from "@/lib/purposes";
+import AddressInput from "@/components/AddressInput";
 
 type Vehicle = { id: string; title: string };
 
@@ -29,19 +30,11 @@ export default function NewTripWizard({
   const [distanceMiles, setDistanceMiles] = useState<number | null>(null);
   const [calculating, setCalculating] = useState(false);
   const [calcErr, setCalcErr] = useState<string | null>(null);
-  const [startOdometer, setStartOdometer] = useState<string>("");
-  const [endOdometer, setEndOdometer] = useState<string>("");
 
   const [purposeCategory, setPurposeCategory] = useState<string>("");
   const [purposeNotes, setPurposeNotes] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
   const [submitErr, setSubmitErr] = useState<string | null>(null);
-
-  const autoEnd = useMemo(() => {
-    const s = parseFloat(startOdometer);
-    if (!Number.isFinite(s) || distanceMiles == null) return "";
-    return (s + distanceMiles).toFixed(1);
-  }, [startOdometer, distanceMiles]);
 
   async function calcDistance() {
     setCalcErr(null);
@@ -86,13 +79,6 @@ export default function NewTripWizard({
           fromAddress: fromAddress.trim(),
           toAddress: toAddress.trim(),
           distanceMiles,
-          startOdometer: startOdometer === "" ? null : Number(startOdometer),
-          endOdometer:
-            endOdometer !== ""
-              ? Number(endOdometer)
-              : autoEnd
-                ? Number(autoEnd)
-                : null,
           purposeCategory: purposeCategory || "Other",
           purposeNotes: purposeNotes.trim() || null,
         }),
@@ -134,37 +120,33 @@ export default function NewTripWizard({
           </datalist>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label>Vehicle</label>
-            <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
-              {vehicles.map((v) => (
-                <option key={v.id} value={v.id}>{v.title}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label>Date</label>
-            <input type="date" value={tripDate} onChange={(e) => setTripDate(e.target.value)} />
-          </div>
+        <div>
+          <label>Vehicle</label>
+          <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
+            {vehicles.map((v) => (
+              <option key={v.id} value={v.id}>{v.title}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>Date</label>
+          <input type="date" value={tripDate} onChange={(e) => setTripDate(e.target.value)} />
         </div>
 
         <div>
           <label>From</label>
-          <input
-            type="text"
-            placeholder="Starting address"
+          <AddressInput
             value={fromAddress}
-            onChange={(e) => { setFromAddress(e.target.value); setDistanceMiles(null); }}
+            placeholder="Starting address"
+            onChange={(v) => { setFromAddress(v); setDistanceMiles(null); }}
           />
         </div>
         <div>
           <label>To</label>
-          <input
-            type="text"
-            placeholder="Destination address"
+          <AddressInput
             value={toAddress}
-            onChange={(e) => { setToAddress(e.target.value); setDistanceMiles(null); }}
+            placeholder="Destination address"
+            onChange={(v) => { setToAddress(v); setDistanceMiles(null); }}
           />
         </div>
 
@@ -177,31 +159,6 @@ export default function NewTripWizard({
           {calculating ? "Calculating…" : distanceMiles != null ? `Distance: ${distanceMiles.toFixed(1)} mi — recalculate` : "Calculate distance"}
         </button>
         {calcErr && <p className="text-sm text-red-600">{calcErr}</p>}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label>Start odometer</label>
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.1"
-              placeholder="optional"
-              value={startOdometer}
-              onChange={(e) => setStartOdometer(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>End odometer</label>
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.1"
-              placeholder={autoEnd || "optional"}
-              value={endOdometer}
-              onChange={(e) => setEndOdometer(e.target.value)}
-            />
-          </div>
-        </div>
 
         <button
           type="button"
